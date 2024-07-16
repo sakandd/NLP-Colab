@@ -1,0 +1,509 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "authorship_tag": "ABX9TyPx6mXYugnq+/G3qAf9h8Ez",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/sakandd/NLP-Colab/blob/main/word%20embedding%20layer%20using%20keras\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "#Word Embedding technique using embedding layer in keras\n"
+      ],
+      "metadata": {
+        "id": "VoI5g4KYsSn1"
+      }
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 3,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "w2usUxU-sQWG",
+        "outputId": "e6566ed8-bf8d-4ed1-f72e-59c8beffd9b9"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Requirement already satisfied: tensorflow in /usr/local/lib/python3.10/dist-packages (2.15.0)\n",
+            "Requirement already satisfied: absl-py>=1.0.0 in /usr/local/lib/python3.10/dist-packages (from tensorflow) (1.4.0)\n",
+            "Requirement already satisfied: astunparse>=1.6.0 in /usr/local/lib/python3.10/dist-packages (from tensorflow) (1.6.3)\n",
+            "Requirement already satisfied: flatbuffers>=23.5.26 in /usr/local/lib/python3.10/dist-packages (from tensorflow) (24.3.25)\n",
+            "Requirement already satisfied: gast!=0.5.0,!=0.5.1,!=0.5.2,>=0.2.1 in /usr/local/lib/python3.10/dist-packages (from tensorflow) (0.6.0)\n",
+            "Requirement already satisfied: google-pasta>=0.1.1 in /usr/local/lib/python3.10/dist-packages (from tensorflow) (0.2.0)\n",
+            "Requirement already satisfied: h5py>=2.9.0 in /usr/local/lib/python3.10/dist-packages (from tensorflow) (3.9.0)\n",
+            "Requirement already satisfied: libclang>=13.0.0 in /usr/local/lib/python3.10/dist-packages (from tensorflow) (18.1.1)\n",
+            "Requirement already satisfied: ml-dtypes~=0.2.0 in /usr/local/lib/python3.10/dist-packages (from tensorflow) (0.2.0)\n",
+            "Requirement already satisfied: numpy<2.0.0,>=1.23.5 in /usr/local/lib/python3.10/dist-packages (from tensorflow) (1.25.2)\n",
+            "Requirement already satisfied: opt-einsum>=2.3.2 in /usr/local/lib/python3.10/dist-packages (from tensorflow) (3.3.0)\n",
+            "Requirement already satisfied: packaging in /usr/local/lib/python3.10/dist-packages (from tensorflow) (24.1)\n",
+            "Requirement already satisfied: protobuf!=4.21.0,!=4.21.1,!=4.21.2,!=4.21.3,!=4.21.4,!=4.21.5,<5.0.0dev,>=3.20.3 in /usr/local/lib/python3.10/dist-packages (from tensorflow) (3.20.3)\n",
+            "Requirement already satisfied: setuptools in /usr/local/lib/python3.10/dist-packages (from tensorflow) (67.7.2)\n",
+            "Requirement already satisfied: six>=1.12.0 in /usr/local/lib/python3.10/dist-packages (from tensorflow) (1.16.0)\n",
+            "Requirement already satisfied: termcolor>=1.1.0 in /usr/local/lib/python3.10/dist-packages (from tensorflow) (2.4.0)\n",
+            "Requirement already satisfied: typing-extensions>=3.6.6 in /usr/local/lib/python3.10/dist-packages (from tensorflow) (4.12.2)\n",
+            "Requirement already satisfied: wrapt<1.15,>=1.11.0 in /usr/local/lib/python3.10/dist-packages (from tensorflow) (1.14.1)\n",
+            "Requirement already satisfied: tensorflow-io-gcs-filesystem>=0.23.1 in /usr/local/lib/python3.10/dist-packages (from tensorflow) (0.37.1)\n",
+            "Requirement already satisfied: grpcio<2.0,>=1.24.3 in /usr/local/lib/python3.10/dist-packages (from tensorflow) (1.64.1)\n",
+            "Requirement already satisfied: tensorboard<2.16,>=2.15 in /usr/local/lib/python3.10/dist-packages (from tensorflow) (2.15.2)\n",
+            "Requirement already satisfied: tensorflow-estimator<2.16,>=2.15.0 in /usr/local/lib/python3.10/dist-packages (from tensorflow) (2.15.0)\n",
+            "Requirement already satisfied: keras<2.16,>=2.15.0 in /usr/local/lib/python3.10/dist-packages (from tensorflow) (2.15.0)\n",
+            "Requirement already satisfied: wheel<1.0,>=0.23.0 in /usr/local/lib/python3.10/dist-packages (from astunparse>=1.6.0->tensorflow) (0.43.0)\n",
+            "Requirement already satisfied: google-auth<3,>=1.6.3 in /usr/local/lib/python3.10/dist-packages (from tensorboard<2.16,>=2.15->tensorflow) (2.27.0)\n",
+            "Requirement already satisfied: google-auth-oauthlib<2,>=0.5 in /usr/local/lib/python3.10/dist-packages (from tensorboard<2.16,>=2.15->tensorflow) (1.2.1)\n",
+            "Requirement already satisfied: markdown>=2.6.8 in /usr/local/lib/python3.10/dist-packages (from tensorboard<2.16,>=2.15->tensorflow) (3.6)\n",
+            "Requirement already satisfied: requests<3,>=2.21.0 in /usr/local/lib/python3.10/dist-packages (from tensorboard<2.16,>=2.15->tensorflow) (2.31.0)\n",
+            "Requirement already satisfied: tensorboard-data-server<0.8.0,>=0.7.0 in /usr/local/lib/python3.10/dist-packages (from tensorboard<2.16,>=2.15->tensorflow) (0.7.2)\n",
+            "Requirement already satisfied: werkzeug>=1.0.1 in /usr/local/lib/python3.10/dist-packages (from tensorboard<2.16,>=2.15->tensorflow) (3.0.3)\n",
+            "Requirement already satisfied: cachetools<6.0,>=2.0.0 in /usr/local/lib/python3.10/dist-packages (from google-auth<3,>=1.6.3->tensorboard<2.16,>=2.15->tensorflow) (5.3.3)\n",
+            "Requirement already satisfied: pyasn1-modules>=0.2.1 in /usr/local/lib/python3.10/dist-packages (from google-auth<3,>=1.6.3->tensorboard<2.16,>=2.15->tensorflow) (0.4.0)\n",
+            "Requirement already satisfied: rsa<5,>=3.1.4 in /usr/local/lib/python3.10/dist-packages (from google-auth<3,>=1.6.3->tensorboard<2.16,>=2.15->tensorflow) (4.9)\n",
+            "Requirement already satisfied: requests-oauthlib>=0.7.0 in /usr/local/lib/python3.10/dist-packages (from google-auth-oauthlib<2,>=0.5->tensorboard<2.16,>=2.15->tensorflow) (1.3.1)\n",
+            "Requirement already satisfied: charset-normalizer<4,>=2 in /usr/local/lib/python3.10/dist-packages (from requests<3,>=2.21.0->tensorboard<2.16,>=2.15->tensorflow) (3.3.2)\n",
+            "Requirement already satisfied: idna<4,>=2.5 in /usr/local/lib/python3.10/dist-packages (from requests<3,>=2.21.0->tensorboard<2.16,>=2.15->tensorflow) (3.7)\n",
+            "Requirement already satisfied: urllib3<3,>=1.21.1 in /usr/local/lib/python3.10/dist-packages (from requests<3,>=2.21.0->tensorboard<2.16,>=2.15->tensorflow) (2.0.7)\n",
+            "Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.10/dist-packages (from requests<3,>=2.21.0->tensorboard<2.16,>=2.15->tensorflow) (2024.7.4)\n",
+            "Requirement already satisfied: MarkupSafe>=2.1.1 in /usr/local/lib/python3.10/dist-packages (from werkzeug>=1.0.1->tensorboard<2.16,>=2.15->tensorflow) (2.1.5)\n",
+            "Requirement already satisfied: pyasn1<0.7.0,>=0.4.6 in /usr/local/lib/python3.10/dist-packages (from pyasn1-modules>=0.2.1->google-auth<3,>=1.6.3->tensorboard<2.16,>=2.15->tensorflow) (0.6.0)\n",
+            "Requirement already satisfied: oauthlib>=3.0.0 in /usr/local/lib/python3.10/dist-packages (from requests-oauthlib>=0.7.0->google-auth-oauthlib<2,>=0.5->tensorboard<2.16,>=2.15->tensorflow) (3.2.2)\n"
+          ]
+        }
+      ],
+      "source": [
+        "!pip install tensorflow\n",
+        "\n",
+        "import tensorflow as tf\n",
+        "from tensorflow.keras.preprocessing.text import one_hot"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "### sentences\n",
+        "sent=[  'the glass of milk',\n",
+        "     'the glass of juice',\n",
+        "     'the cup of tea',\n",
+        "    'I am a good boy',\n",
+        "     'I am a good developer',\n",
+        "     'understand the meaning of words',\n",
+        "     'your videos are good',]"
+      ],
+      "metadata": {
+        "id": "8ymZAp3WuJvv"
+      },
+      "execution_count": 4,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "sent"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "mlKWksSMuSKM",
+        "outputId": "bc09fe75-8064-408b-94fb-8e7b240f5132"
+      },
+      "execution_count": 5,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "['the glass of milk',\n",
+              " 'the glass of juice',\n",
+              " 'the cup of tea',\n",
+              " 'I am a good boy',\n",
+              " 'I am a good developer',\n",
+              " 'understand the meaning of words',\n",
+              " 'your videos are good']"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 5
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "#Vocabulary size\n",
+        "voc_size=10000"
+      ],
+      "metadata": {
+        "id": "PA_Dalm_uk-u"
+      },
+      "execution_count": 6,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "onehot_repr=[one_hot(words,voc_size)for words in sent]\n",
+        "print(onehot_repr)"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "vRfuj4hlusNK",
+        "outputId": "09104e3e-58c2-4a82-fa38-42ac06468f0b"
+      },
+      "execution_count": 7,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "[[7827, 3092, 2484, 4256], [7827, 3092, 2484, 5996], [7827, 5677, 2484, 4265], [8575, 2994, 2455, 5244, 8619], [8575, 2994, 2455, 5244, 3403], [2718, 7827, 1628, 2484, 3378], [4132, 6636, 9247, 5244]]\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "from tensorflow.keras.layers import Embedding\n",
+        "from tensorflow.keras.preprocessing.sequence import pad_sequences\n",
+        "from tensorflow.keras.models import Sequential"
+      ],
+      "metadata": {
+        "id": "0BeudVrJ2ZDd"
+      },
+      "execution_count": 8,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import numpy as np"
+      ],
+      "metadata": {
+        "id": "nytz3gJL6e5r"
+      },
+      "execution_count": 9,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "sent_length=8\n",
+        "embedded_docs=pad_sequences(onehot_repr,padding='pre',maxlen=sent_length)\n",
+        "print(embedded_docs)"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "4iSVBr486iJk",
+        "outputId": "221cedfb-aed8-4cfd-a0cd-bc98504532b1"
+      },
+      "execution_count": 10,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "[[   0    0    0    0 7827 3092 2484 4256]\n",
+            " [   0    0    0    0 7827 3092 2484 5996]\n",
+            " [   0    0    0    0 7827 5677 2484 4265]\n",
+            " [   0    0    0 8575 2994 2455 5244 8619]\n",
+            " [   0    0    0 8575 2994 2455 5244 3403]\n",
+            " [   0    0    0 2718 7827 1628 2484 3378]\n",
+            " [   0    0    0    0 4132 6636 9247 5244]]\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "dim =10"
+      ],
+      "metadata": {
+        "id": "0WFNnNos6lbA"
+      },
+      "execution_count": 11,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "model=Sequential()\n",
+        "model.add(Embedding(voc_size,10,input_length=sent_length))\n",
+        "model.compile('adam','mse')"
+      ],
+      "metadata": {
+        "id": "96R6Nbtb6pDO"
+      },
+      "execution_count": 12,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "model.summary()"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "SLcyB1Vd6r_n",
+        "outputId": "aed161e5-fa78-4610-bde5-5699d073c644"
+      },
+      "execution_count": 13,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Model: \"sequential\"\n",
+            "_________________________________________________________________\n",
+            " Layer (type)                Output Shape              Param #   \n",
+            "=================================================================\n",
+            " embedding (Embedding)       (None, 8, 10)             100000    \n",
+            "                                                                 \n",
+            "=================================================================\n",
+            "Total params: 100000 (390.62 KB)\n",
+            "Trainable params: 100000 (390.62 KB)\n",
+            "Non-trainable params: 0 (0.00 Byte)\n",
+            "_________________________________________________________________\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "print(model.predict(embedded_docs))"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "oYItZKc46vVc",
+        "outputId": "3f77b679-9892-4ffe-9580-a0dbdeb460b1"
+      },
+      "execution_count": 14,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "1/1 [==============================] - 0s 229ms/step\n",
+            "[[[-0.00128784  0.00165353  0.04818512  0.03171451 -0.02648417\n",
+            "   -0.01896416  0.03890897  0.04966294 -0.02711925  0.00030974]\n",
+            "  [-0.00128784  0.00165353  0.04818512  0.03171451 -0.02648417\n",
+            "   -0.01896416  0.03890897  0.04966294 -0.02711925  0.00030974]\n",
+            "  [-0.00128784  0.00165353  0.04818512  0.03171451 -0.02648417\n",
+            "   -0.01896416  0.03890897  0.04966294 -0.02711925  0.00030974]\n",
+            "  [-0.00128784  0.00165353  0.04818512  0.03171451 -0.02648417\n",
+            "   -0.01896416  0.03890897  0.04966294 -0.02711925  0.00030974]\n",
+            "  [-0.03035998  0.02382112 -0.00586361  0.02388475  0.03117502\n",
+            "    0.01777389 -0.02862099 -0.00039232  0.01396363 -0.04157399]\n",
+            "  [ 0.04402642 -0.04294269  0.03787369  0.01223023  0.02987287\n",
+            "    0.03340843 -0.0477649   0.03246889 -0.01894513 -0.04704098]\n",
+            "  [ 0.0332056  -0.037085   -0.0437579  -0.00536864  0.03406823\n",
+            "   -0.0326068  -0.04626359 -0.01904868 -0.00547216  0.01626109]\n",
+            "  [-0.00527881  0.00508126 -0.00907701 -0.01278523 -0.04468123\n",
+            "    0.01353879  0.0023284   0.00044358  0.0225243   0.02678916]]\n",
+            "\n",
+            " [[-0.00128784  0.00165353  0.04818512  0.03171451 -0.02648417\n",
+            "   -0.01896416  0.03890897  0.04966294 -0.02711925  0.00030974]\n",
+            "  [-0.00128784  0.00165353  0.04818512  0.03171451 -0.02648417\n",
+            "   -0.01896416  0.03890897  0.04966294 -0.02711925  0.00030974]\n",
+            "  [-0.00128784  0.00165353  0.04818512  0.03171451 -0.02648417\n",
+            "   -0.01896416  0.03890897  0.04966294 -0.02711925  0.00030974]\n",
+            "  [-0.00128784  0.00165353  0.04818512  0.03171451 -0.02648417\n",
+            "   -0.01896416  0.03890897  0.04966294 -0.02711925  0.00030974]\n",
+            "  [-0.03035998  0.02382112 -0.00586361  0.02388475  0.03117502\n",
+            "    0.01777389 -0.02862099 -0.00039232  0.01396363 -0.04157399]\n",
+            "  [ 0.04402642 -0.04294269  0.03787369  0.01223023  0.02987287\n",
+            "    0.03340843 -0.0477649   0.03246889 -0.01894513 -0.04704098]\n",
+            "  [ 0.0332056  -0.037085   -0.0437579  -0.00536864  0.03406823\n",
+            "   -0.0326068  -0.04626359 -0.01904868 -0.00547216  0.01626109]\n",
+            "  [-0.00202067  0.02924109  0.02941732 -0.00184032  0.0094895\n",
+            "    0.02509331  0.01859349 -0.04582207  0.03474071 -0.03947527]]\n",
+            "\n",
+            " [[-0.00128784  0.00165353  0.04818512  0.03171451 -0.02648417\n",
+            "   -0.01896416  0.03890897  0.04966294 -0.02711925  0.00030974]\n",
+            "  [-0.00128784  0.00165353  0.04818512  0.03171451 -0.02648417\n",
+            "   -0.01896416  0.03890897  0.04966294 -0.02711925  0.00030974]\n",
+            "  [-0.00128784  0.00165353  0.04818512  0.03171451 -0.02648417\n",
+            "   -0.01896416  0.03890897  0.04966294 -0.02711925  0.00030974]\n",
+            "  [-0.00128784  0.00165353  0.04818512  0.03171451 -0.02648417\n",
+            "   -0.01896416  0.03890897  0.04966294 -0.02711925  0.00030974]\n",
+            "  [-0.03035998  0.02382112 -0.00586361  0.02388475  0.03117502\n",
+            "    0.01777389 -0.02862099 -0.00039232  0.01396363 -0.04157399]\n",
+            "  [ 0.04891373 -0.02389544  0.0036625   0.00568459 -0.03818011\n",
+            "   -0.00058943  0.03911084 -0.00545681 -0.00800927  0.00403527]\n",
+            "  [ 0.0332056  -0.037085   -0.0437579  -0.00536864  0.03406823\n",
+            "   -0.0326068  -0.04626359 -0.01904868 -0.00547216  0.01626109]\n",
+            "  [-0.01317777 -0.00574191 -0.02255515 -0.01703351 -0.01315954\n",
+            "   -0.00073464  0.02707225 -0.02681904  0.0292673  -0.03304294]]\n",
+            "\n",
+            " [[-0.00128784  0.00165353  0.04818512  0.03171451 -0.02648417\n",
+            "   -0.01896416  0.03890897  0.04966294 -0.02711925  0.00030974]\n",
+            "  [-0.00128784  0.00165353  0.04818512  0.03171451 -0.02648417\n",
+            "   -0.01896416  0.03890897  0.04966294 -0.02711925  0.00030974]\n",
+            "  [-0.00128784  0.00165353  0.04818512  0.03171451 -0.02648417\n",
+            "   -0.01896416  0.03890897  0.04966294 -0.02711925  0.00030974]\n",
+            "  [ 0.01069248 -0.02827981 -0.02909201 -0.02792002 -0.01502462\n",
+            "   -0.04119363 -0.01323994  0.01174594 -0.02018256  0.04237076]\n",
+            "  [ 0.0037396  -0.04894231 -0.01753332  0.01313918 -0.03143243\n",
+            "    0.01982686 -0.01740966  0.03200157 -0.04041522 -0.00316298]\n",
+            "  [ 0.04641056 -0.0052871   0.00259606 -0.00333728 -0.0168072\n",
+            "   -0.01480523 -0.02647536 -0.0092737   0.03992618 -0.04513092]\n",
+            "  [-0.00303376  0.0090521   0.0201561   0.04573311 -0.02864983\n",
+            "   -0.03840185 -0.04095424  0.04878419 -0.02955816 -0.01242888]\n",
+            "  [-0.02928731  0.02484549 -0.04940462  0.04914326  0.03430942\n",
+            "   -0.00887876  0.04478982 -0.00946724  0.04135587  0.02269873]]\n",
+            "\n",
+            " [[-0.00128784  0.00165353  0.04818512  0.03171451 -0.02648417\n",
+            "   -0.01896416  0.03890897  0.04966294 -0.02711925  0.00030974]\n",
+            "  [-0.00128784  0.00165353  0.04818512  0.03171451 -0.02648417\n",
+            "   -0.01896416  0.03890897  0.04966294 -0.02711925  0.00030974]\n",
+            "  [-0.00128784  0.00165353  0.04818512  0.03171451 -0.02648417\n",
+            "   -0.01896416  0.03890897  0.04966294 -0.02711925  0.00030974]\n",
+            "  [ 0.01069248 -0.02827981 -0.02909201 -0.02792002 -0.01502462\n",
+            "   -0.04119363 -0.01323994  0.01174594 -0.02018256  0.04237076]\n",
+            "  [ 0.0037396  -0.04894231 -0.01753332  0.01313918 -0.03143243\n",
+            "    0.01982686 -0.01740966  0.03200157 -0.04041522 -0.00316298]\n",
+            "  [ 0.04641056 -0.0052871   0.00259606 -0.00333728 -0.0168072\n",
+            "   -0.01480523 -0.02647536 -0.0092737   0.03992618 -0.04513092]\n",
+            "  [-0.00303376  0.0090521   0.0201561   0.04573311 -0.02864983\n",
+            "   -0.03840185 -0.04095424  0.04878419 -0.02955816 -0.01242888]\n",
+            "  [-0.0126421  -0.01465374 -0.00228828  0.00253754 -0.03839051\n",
+            "    0.03305337 -0.01116569 -0.04042058 -0.02117156 -0.00165832]]\n",
+            "\n",
+            " [[-0.00128784  0.00165353  0.04818512  0.03171451 -0.02648417\n",
+            "   -0.01896416  0.03890897  0.04966294 -0.02711925  0.00030974]\n",
+            "  [-0.00128784  0.00165353  0.04818512  0.03171451 -0.02648417\n",
+            "   -0.01896416  0.03890897  0.04966294 -0.02711925  0.00030974]\n",
+            "  [-0.00128784  0.00165353  0.04818512  0.03171451 -0.02648417\n",
+            "   -0.01896416  0.03890897  0.04966294 -0.02711925  0.00030974]\n",
+            "  [ 0.01281419 -0.02483143  0.04253655  0.01115362 -0.02753001\n",
+            "   -0.04483765 -0.00035095  0.02561399  0.01453498 -0.02232856]\n",
+            "  [-0.03035998  0.02382112 -0.00586361  0.02388475  0.03117502\n",
+            "    0.01777389 -0.02862099 -0.00039232  0.01396363 -0.04157399]\n",
+            "  [-0.01218092  0.02827184  0.01449117 -0.01005147  0.00748409\n",
+            "   -0.02278558  0.00969834  0.00032393 -0.02518933  0.04628866]\n",
+            "  [ 0.0332056  -0.037085   -0.0437579  -0.00536864  0.03406823\n",
+            "   -0.0326068  -0.04626359 -0.01904868 -0.00547216  0.01626109]\n",
+            "  [ 0.02326519  0.01164024 -0.04080445 -0.00313948 -0.04742878\n",
+            "   -0.0374277   0.01694189 -0.00572885  0.00746002  0.01383182]]\n",
+            "\n",
+            " [[-0.00128784  0.00165353  0.04818512  0.03171451 -0.02648417\n",
+            "   -0.01896416  0.03890897  0.04966294 -0.02711925  0.00030974]\n",
+            "  [-0.00128784  0.00165353  0.04818512  0.03171451 -0.02648417\n",
+            "   -0.01896416  0.03890897  0.04966294 -0.02711925  0.00030974]\n",
+            "  [-0.00128784  0.00165353  0.04818512  0.03171451 -0.02648417\n",
+            "   -0.01896416  0.03890897  0.04966294 -0.02711925  0.00030974]\n",
+            "  [-0.00128784  0.00165353  0.04818512  0.03171451 -0.02648417\n",
+            "   -0.01896416  0.03890897  0.04966294 -0.02711925  0.00030974]\n",
+            "  [-0.0149752  -0.02930305 -0.04513261  0.01574621  0.02280536\n",
+            "   -0.04451889  0.04742935 -0.04511744  0.04129818  0.04037309]\n",
+            "  [ 0.02523099 -0.02104367 -0.02789037 -0.01073634 -0.00064529\n",
+            "   -0.01783108 -0.01284429 -0.0214019  -0.017061   -0.00756263]\n",
+            "  [ 0.04116977  0.03636874 -0.02461489  0.01608172  0.00637872\n",
+            "    0.00432086  0.02245791  0.0208551  -0.0161492   0.01430659]\n",
+            "  [-0.00303376  0.0090521   0.0201561   0.04573311 -0.02864983\n",
+            "   -0.03840185 -0.04095424  0.04878419 -0.02955816 -0.01242888]]]\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "embedded_docs[0]"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "7zR2F1H160bN",
+        "outputId": "a56e4d26-d6be-4660-de10-a6bf077ff779"
+      },
+      "execution_count": 15,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "array([   0,    0,    0,    0, 7827, 3092, 2484, 4256], dtype=int32)"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 15
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "print(model.predict(embedded_docs)[0])"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "XM6_p42r63PY",
+        "outputId": "1e5dc76b-27c0-4c07-aada-e862c3f0f017"
+      },
+      "execution_count": 16,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "1/1 [==============================] - 0s 38ms/step\n",
+            "[[-0.00128784  0.00165353  0.04818512  0.03171451 -0.02648417 -0.01896416\n",
+            "   0.03890897  0.04966294 -0.02711925  0.00030974]\n",
+            " [-0.00128784  0.00165353  0.04818512  0.03171451 -0.02648417 -0.01896416\n",
+            "   0.03890897  0.04966294 -0.02711925  0.00030974]\n",
+            " [-0.00128784  0.00165353  0.04818512  0.03171451 -0.02648417 -0.01896416\n",
+            "   0.03890897  0.04966294 -0.02711925  0.00030974]\n",
+            " [-0.00128784  0.00165353  0.04818512  0.03171451 -0.02648417 -0.01896416\n",
+            "   0.03890897  0.04966294 -0.02711925  0.00030974]\n",
+            " [-0.03035998  0.02382112 -0.00586361  0.02388475  0.03117502  0.01777389\n",
+            "  -0.02862099 -0.00039232  0.01396363 -0.04157399]\n",
+            " [ 0.04402642 -0.04294269  0.03787369  0.01223023  0.02987287  0.03340843\n",
+            "  -0.0477649   0.03246889 -0.01894513 -0.04704098]\n",
+            " [ 0.0332056  -0.037085   -0.0437579  -0.00536864  0.03406823 -0.0326068\n",
+            "  -0.04626359 -0.01904868 -0.00547216  0.01626109]\n",
+            " [-0.00527881  0.00508126 -0.00907701 -0.01278523 -0.04468123  0.01353879\n",
+            "   0.0023284   0.00044358  0.0225243   0.02678916]]\n"
+          ]
+        }
+      ]
+    }
+  ]
+}
